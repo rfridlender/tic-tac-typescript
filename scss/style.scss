@@ -1,0 +1,49 @@
+@mixin expand {
+  width: 100%;
+  height: 100%;
+}
+
+@mixin fcc($direction) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: $direction nowrap;
+}
+
+// $color: #000000FF;
+
+*, *:before, *:after {
+  line-height: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  @include expand();
+  body {
+    @include expand();
+    @include fcc(column);
+    main {
+      @include expand();
+      max-width: 64rem;
+      @include fcc(column);
+      background-color: gray;
+      section {
+        width: 32rem;
+        height: 32rem;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: .25rem;
+        background-color: black;
+        div.sqr {
+          @include expand();
+          @include fcc(row);
+          background-color: white;
+          font-size: 4rem;
+        }
+      }
+    }
+  }
+}
