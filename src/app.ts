@@ -6,19 +6,22 @@
 ]
 
 /*---------------------------- Variables (state) ----------------------------*/
-let board: number[], turn: number, winner: boolean, tie: boolean;
+let board: number[], turn: number, winner: boolean, tie: boolean, againstPlayer: boolean;
 
 /*------------------------ Cached Element References ------------------------*/
-const squareEls = document.querySelectorAll<HTMLDivElement>('.sqr')!;
 const messageEl = document.querySelector<HTMLHeadingElement>('#message')!;
-const resetBtnEl = document.querySelector<HTMLButtonElement>('#reset')!;
+const boardEl = document.querySelector<HTMLElement>('#board')!;
+const squareEls = document.querySelectorAll<HTMLDivElement>('.sqr')!;
+const modeEls = document.querySelectorAll<HTMLButtonElement>('.mode')!;
 
 /*----------------------------- Event Listeners -----------------------------*/
 squareEls.forEach(squareEl => squareEl.addEventListener('click', handleClick));
-resetBtnEl.addEventListener('click', init);
+modeEls.forEach(modeEl => modeEl.addEventListener('click', init));
 
 /*-------------------------------- Functions --------------------------------*/
-function init(): void {
+function init({ target: { id } }: MouseEvent): void {
+  boardEl.classList.remove('hidden');
+  againstPlayer = id === 'player' ? true : false;
   board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   turn = 1;
   winner = false;
@@ -45,7 +48,7 @@ function updateMessage(): void {
 }
 
 interface MouseEvent {
-  target: HTMLDivElement;
+  target: HTMLDivElement | HTMLButtonElement;
 }
 
 function handleClick({ target: { id } }: MouseEvent): void {
@@ -56,6 +59,23 @@ function handleClick({ target: { id } }: MouseEvent): void {
   checkForWinner();
   switchPlayerTurn();
   render();
+  !againstPlayer && !winner && !tie && runAlgorithm();
+}
+
+function runAlgorithm():void {
+  const availableMoves = findAvailableMoves();
+  const sqrIdx: number = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+  placePiece(sqrIdx);
+  checkForTie();
+  checkForWinner();
+  switchPlayerTurn();
+  render();
+}
+
+function findAvailableMoves(): number[] {
+  const availableMoves: number[] = [];
+  board.forEach((value, idx) => !value && availableMoves.push(idx));
+  return availableMoves;
 }
 
 function placePiece(idx: number): void {
@@ -74,5 +94,3 @@ function switchPlayerTurn(): void {
   if (winner) return;
   turn *= -1;
 }
-
-init();

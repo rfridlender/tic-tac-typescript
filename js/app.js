@@ -6,16 +6,19 @@ const winningCombos = [
     [0, 4, 8], [2, 4, 6]
 ];
 /*---------------------------- Variables (state) ----------------------------*/
-let board, turn, winner, tie;
+let board, turn, winner, tie, againstPlayer;
 /*------------------------ Cached Element References ------------------------*/
-const squareEls = document.querySelectorAll('.sqr');
 const messageEl = document.querySelector('#message');
-const resetBtnEl = document.querySelector('#reset');
+const boardEl = document.querySelector('#board');
+const squareEls = document.querySelectorAll('.sqr');
+const modeEls = document.querySelectorAll('.mode');
 /*----------------------------- Event Listeners -----------------------------*/
 squareEls.forEach(squareEl => squareEl.addEventListener('click', handleClick));
-resetBtnEl.addEventListener('click', init);
+modeEls.forEach(modeEl => modeEl.addEventListener('click', init));
 /*-------------------------------- Functions --------------------------------*/
-function init() {
+function init({ target: { id } }) {
+    boardEl.classList.remove('hidden');
+    againstPlayer = id === 'player' ? true : false;
     board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
     turn = 1;
     winner = false;
@@ -46,6 +49,21 @@ function handleClick({ target: { id } }) {
     checkForWinner();
     switchPlayerTurn();
     render();
+    !againstPlayer && !winner && !tie && runAlgorithm();
+}
+function runAlgorithm() {
+    const availableMoves = findAvailableMoves();
+    const sqrIdx = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    placePiece(sqrIdx);
+    checkForTie();
+    checkForWinner();
+    switchPlayerTurn();
+    render();
+}
+function findAvailableMoves() {
+    const availableMoves = [];
+    board.forEach((value, idx) => !value && availableMoves.push(idx));
+    return availableMoves;
 }
 function placePiece(idx) {
     board[idx] = turn;
@@ -61,4 +79,3 @@ function switchPlayerTurn() {
         return;
     turn *= -1;
 }
-init();
