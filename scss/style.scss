@@ -30,8 +30,8 @@
       @include fcc(column);
       background-color: gray;
       section {
-        width: 32rem;
-        height: 32rem;
+        min-width: 32rem;
+        min-height: 32rem;
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(3, 1fr);
