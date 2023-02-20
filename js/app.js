@@ -66,42 +66,45 @@ function runAlgorithm() {
     render();
 }
 function calculateMove(availableMoves) {
-    let simBoard, simTurn, simWinner, simTie, totalPlayerWinsByMove, winningCombo, algoMove;
+    let simBoard, simTurn, winningAlgoCombo, winningPlayerCombo, totalPlayerForcedWinsByMove, algoMove;
     simBoard = [...board];
     simTurn = -1;
-    simWinner = false;
-    simTie = false;
-    totalPlayerWinsByMove = new Array(availableMoves.length).fill(0);
-    winningCombo = winningCombos[winningCombos.findIndex(winningCombo => Math.abs(winningCombo.reduce((sum, idx) => sum += simBoard[idx], 0)) === 2)];
-    if (winningCombo) {
-        algoMove = winningCombo[winningCombo.findIndex(sqrIdx => !simBoard[sqrIdx])];
+    totalPlayerForcedWinsByMove = new Array(availableMoves.length).fill(0);
+    winningAlgoCombo = winningCombos[winningCombos.findIndex(winningCombo => winningCombo.reduce((sum, idx) => sum += simBoard[idx], 0) === -2)];
+    winningPlayerCombo = winningCombos[winningCombos.findIndex(winningCombo => winningCombo.reduce((sum, idx) => sum += simBoard[idx], 0) === 2)];
+    if (winningAlgoCombo) {
+        algoMove = winningAlgoCombo[winningAlgoCombo.findIndex(sqrIdx => !simBoard[sqrIdx])];
+    }
+    else if (winningPlayerCombo) {
+        algoMove = winningPlayerCombo[winningPlayerCombo.findIndex(sqrIdx => !simBoard[sqrIdx])];
     }
     else {
         availableMoves.forEach((move, idx) => {
-            simulateMove(simBoard, simTurn, move, idx, totalPlayerWinsByMove);
+            simulateMove(simBoard, simTurn, move, idx, totalPlayerForcedWinsByMove);
         });
-        algoMove = availableMoves[totalPlayerWinsByMove.indexOf(Math.max(...totalPlayerWinsByMove))];
+        algoMove = availableMoves[totalPlayerForcedWinsByMove.indexOf(Math.max(...totalPlayerForcedWinsByMove))];
     }
     return algoMove;
 }
-function simulateMove(board, turn, move, idx, totalWinsByMove) {
+function simulateMove(board, turn, move, idx, totalPlayerForcedWinsByMove) {
     const boardInstance = [...board];
     boardInstance[move] = turn;
     turn *= -1;
     const availableMoves = [];
     boardInstance.forEach((value, idx) => !value && availableMoves.push(idx));
-    if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === -3)) {
+    if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === 3)) {
+        totalPlayerForcedWinsByMove[idx]++;
         return;
     }
-    if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === 3)) {
-        totalWinsByMove[idx] += 1;
+    if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === -3)) {
+        totalPlayerForcedWinsByMove[idx]--;
         return;
     }
     if (!availableMoves.length) {
         return;
     }
     availableMoves.forEach(move => {
-        simulateMove(boardInstance, turn, move, idx, totalWinsByMove);
+        simulateMove(boardInstance, turn, move, idx, totalPlayerForcedWinsByMove);
     });
 }
 function findAvailableMoves() {
