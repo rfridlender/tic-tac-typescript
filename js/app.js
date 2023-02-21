@@ -6,29 +6,34 @@ const winningCombos = [
     [0, 4, 8], [2, 4, 6]
 ];
 /*---------------------------- Variables (state) ----------------------------*/
-let board, turn, winner, tie, againstPlayer, moveCount;
+let board, turn, winner, tie, againstPlayer;
 /*------------------------ Cached Element References ------------------------*/
+const titleEl = document.querySelector('#title');
 const messageEl = document.querySelector('#message');
 const boardEl = document.querySelector('#board');
 const squareEls = document.querySelectorAll('.sqr');
+const modesContainerEl = document.querySelector('#modes-container');
 const modeEls = document.querySelectorAll('.mode');
 /*----------------------------- Event Listeners -----------------------------*/
-squareEls.forEach(squareEl => squareEl.addEventListener('click', handleClick));
+const addBoardEventListeners = () => squareEls.forEach(squareEl => squareEl.addEventListener('click', handleClick));
 modeEls.forEach(modeEl => modeEl.addEventListener('click', init));
 /*-------------------------------- Functions --------------------------------*/
 function init({ target: { id } }) {
-    boardEl.classList.remove('hidden');
-    board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-    turn = 1;
-    winner = false;
-    tie = false;
-    againstPlayer = id === 'player' ? true : false;
-    moveCount = 0;
-    render();
+    boardEl.classList.add('hidden');
+    messageEl.classList.add('hidden');
+    setTimeout(() => {
+        board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        turn = 1;
+        winner = false;
+        tie = false;
+        againstPlayer = id === 'player' ? true : false;
+        render();
+        boardEl.classList.remove('hidden');
+        addBoardEventListeners();
+    }, 250);
 }
 function placePiece(idx) {
     board[idx] = turn;
-    moveCount++;
 }
 function checkForTie() {
     tie = board.every((value) => !!value);
@@ -42,19 +47,41 @@ function switchPlayerTurn() {
     turn *= -1;
 }
 function render() {
-    updateBoard();
     updateMessage();
+    updateBoard();
 }
 function updateBoard() {
-    board.forEach((value, idx) => {
-        squareEls[idx].textContent = value ? value === 1 ? 'X' : 'O' : '';
-    });
+    if (againstPlayer) {
+        board.forEach((value, idx) => {
+            squareEls[idx].innerHTML = value ? value === 1 ? 'X' : 'O' : '';
+        });
+    }
+    else {
+        board.forEach((value, idx) => {
+            squareEls[idx].innerHTML = value ? value === 1 ? '1' : '0' : '';
+        });
+    }
+}
+function spanify(str) {
+    return `<span>${str}<span/>`;
 }
 function updateMessage() {
-    messageEl.textContent =
-        winner ? `Player ${turn === 1 ? `One` : `Two`} Won!` :
-            tie ? `Cat's Gam!` :
-                `Player ${turn === 1 ? `One` : `Two`}'s Turn!`;
+    messageEl.classList.add('hidden');
+    setTimeout(() => {
+        if (againstPlayer) {
+            messageEl.textContent =
+                winner ? `Player ${turn === 1 ? `One` : `Two`} Won!` :
+                    tie ? `Cat's Game!` :
+                        `Player ${turn === 1 ? `One` : `Two`}'s Turn!`;
+        }
+        else {
+            messageEl.textContent =
+                winner ? turn === 1 ? 'Error: Solution Not Found' : 'Solution Found' :
+                    tie ? `Solution Found` :
+                        turn === 1 ? 'Listening for input...' : 'Calculating output...';
+        }
+        messageEl.classList.remove('hidden');
+    }, board.every(value => !value) ? 0 : 250);
 }
 /*---------------------------- Player Functions -----------------------------*/
 function handleClick({ target: { id } }) {
@@ -66,7 +93,13 @@ function handleClick({ target: { id } }) {
     checkForWinner();
     switchPlayerTurn();
     render();
-    !againstPlayer && !winner && !tie && runAlgorithm();
+    if (!againstPlayer && !winner && !tie) {
+        squareEls.forEach(squareEl => squareEl.removeEventListener('click', handleClick));
+        setTimeout(() => {
+            runAlgorithm();
+            squareEls.forEach(squareEl => squareEl.addEventListener('click', handleClick));
+        }, 1500);
+    }
 }
 /*-------------------------- Algorithm Functions ----------------------------*/
 function runAlgorithm() {
@@ -104,12 +137,12 @@ function simulateMove(board, turn, move, idx, totalWinsByMove) {
     turn *= -1;
     const availableMoves = [];
     boardInstance.forEach((value, idx) => !value && availableMoves.push(idx));
-    if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === 3)) {
-        totalWinsByMove[idx]--;
-        return;
-    }
     if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === -3)) {
         totalWinsByMove[idx]++;
+        return;
+    }
+    if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === 3)) {
+        totalWinsByMove[idx]--;
         return;
     }
     if (!availableMoves.length) {
@@ -124,3 +157,13 @@ function findAvailableMoves() {
     board.forEach((value, idx) => !value && availableMoves.push(idx));
     return availableMoves;
 }
+/*-------------------------- Opening Animations -----------------------------*/
+setTimeout(() => {
+    titleEl.classList.remove('hidden');
+}, 1000);
+setTimeout(() => {
+    messageEl.classList.remove('hidden');
+}, 2000);
+setTimeout(() => {
+    modesContainerEl.classList.remove('hidden');
+}, 3000);

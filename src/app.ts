@@ -6,33 +6,38 @@
 ];
 
 /*---------------------------- Variables (state) ----------------------------*/
-let board: number[], turn: number, winner: boolean, tie: boolean, againstPlayer: boolean, moveCount: number;
+let board: number[], turn: number, winner: boolean, tie: boolean, againstPlayer: boolean;
 
 /*------------------------ Cached Element References ------------------------*/
+const titleEl = document.querySelector<HTMLHeadingElement>('#title')!;
 const messageEl = document.querySelector<HTMLHeadingElement>('#message')!;
 const boardEl = document.querySelector<HTMLElement>('#board')!;
 const squareEls = document.querySelectorAll<HTMLDivElement>('.sqr')!;
+const modesContainerEl = document.querySelector<HTMLButtonElement>('#modes-container')!;
 const modeEls = document.querySelectorAll<HTMLButtonElement>('.mode')!;
 
 /*----------------------------- Event Listeners -----------------------------*/
-squareEls.forEach(squareEl => squareEl.addEventListener('click', handleClick));
+const addBoardEventListeners = () => squareEls.forEach(squareEl => squareEl.addEventListener('click', handleClick));
 modeEls.forEach(modeEl => modeEl.addEventListener('click', init));
 
 /*-------------------------------- Functions --------------------------------*/
 function init({ target: { id } }: MouseEvent): void {
-  boardEl.classList.remove('hidden');
-  board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-  turn = 1;
-  winner = false;
-  tie = false;
-  againstPlayer = id === 'player' ? true : false;
-  moveCount = 0;
-  render();
+  boardEl.classList.add('hidden');
+  messageEl.classList.add('hidden');
+  setTimeout(() => {
+    board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    turn = 1;
+    winner = false;
+    tie = false;
+    againstPlayer = id === 'player' ? true : false;
+    render(); 
+    boardEl.classList.remove('hidden');
+    addBoardEventListeners();
+  }, 250);
 }
 
 function placePiece(idx: number): void {
   board[idx] = turn;
-  moveCount++;
 }
 
 function checkForTie(): void {
@@ -49,21 +54,42 @@ function switchPlayerTurn(): void {
 }
 
 function render(): void {
-  updateBoard();
   updateMessage();
+  updateBoard();
 }
 
 function updateBoard(): void {
-  board.forEach((value: number, idx: number): void => {
-    squareEls[idx].textContent = value ? value === 1 ? 'X' : 'O' : '';
-  });
+  if (againstPlayer) {
+    board.forEach((value: number, idx: number): void => {
+      squareEls[idx].innerHTML = value ? value === 1 ? 'X' : 'O' : '';
+    });
+  } else {
+    board.forEach((value: number, idx: number): void => {
+      squareEls[idx].innerHTML = value ? value === 1 ? '1' : '0' : '';
+    });
+  }
+}
+
+function spanify(str: string): string {
+  return `<span>${str}<span/>`;
 }
 
 function updateMessage(): void {
-  messageEl.textContent = 
-    winner ? `Player ${turn === 1 ? `One` : `Two`} Won!` :
-    tie ? `Cat's Gam!` :
-    `Player ${turn === 1 ? `One` : `Two`}'s Turn!`;
+  messageEl.classList.add('hidden');
+  setTimeout(() => {
+    if (againstPlayer) {
+      messageEl.textContent = 
+        winner ? `Player ${turn === 1 ? `One` : `Two`} Won!` :
+        tie ? `Cat's Game!` :
+        `Player ${turn === 1 ? `One` : `Two`}'s Turn!`;
+    } else {
+      messageEl.textContent = 
+      winner ? turn === 1 ? 'Error: Solution Not Found': 'Solution Found' :
+      tie ? `Solution Found` :
+      turn === 1 ? 'Listening for input...' : 'Calculating output...'
+    }
+    messageEl.classList.remove('hidden');
+  }, board.every(value => !value) ? 0 : 250);
 }
 
 /*---------------------------- Player Functions -----------------------------*/
@@ -75,7 +101,13 @@ function handleClick({ target: { id } }: MouseEvent): void {
   checkForWinner();
   switchPlayerTurn();
   render();
-  !againstPlayer && !winner && !tie && runAlgorithm();
+  if (!againstPlayer && !winner && !tie) {
+    squareEls.forEach(squareEl => squareEl.removeEventListener('click', handleClick));
+    setTimeout(() => {
+      runAlgorithm();
+      squareEls.forEach(squareEl => squareEl.addEventListener('click', handleClick));
+    }, 1500);
+  }
 }
 
 interface MouseEvent {
@@ -118,12 +150,12 @@ function simulateMove(board: number[], turn: number, move: number, idx: number, 
   turn *= -1;
   const availableMoves: number[] = [];
   boardInstance.forEach((value, idx) => !value && availableMoves.push(idx));
-  if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === 3)) {
-    totalWinsByMove[idx]--;
-    return;
-  }
   if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === -3)) {
     totalWinsByMove[idx]++;
+    return;
+  }
+  if (winningCombos.some(winningCombo => winningCombo.reduce((sum, idx) => sum += boardInstance[idx], 0) === 3)) {
+    totalWinsByMove[idx]--;
     return;
   }
   if (!availableMoves.length) {
@@ -139,3 +171,16 @@ function findAvailableMoves(): number[] {
   board.forEach((value, idx) => !value && availableMoves.push(idx));
   return availableMoves;
 }
+
+/*-------------------------- Opening Animations -----------------------------*/
+setTimeout(() => {
+  titleEl.classList.remove('hidden');
+}, 1000);
+
+setTimeout(() => {
+  messageEl.classList.remove('hidden');
+}, 2000);
+
+setTimeout(() => {
+  modesContainerEl.classList.remove('hidden');
+}, 3000);

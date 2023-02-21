@@ -10,43 +10,100 @@
   flex-flow: $direction nowrap;
 }
 
-// $color: #000000FF;
+$color-1: #3A1203;
+$color-2: #571B03;
+$color-3: #8F2B04;
+$color-4: #B6CDB1;
+$color-primary: #C06E21;
+$color-secondary: #E6AC49;
 
 *, *:before, *:after {
   line-height: 100%;
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  font-family: 'Anonymous Pro', monospace;
+  color: $color-primary;
+  // border: 1px solid white;
 }
 
 :root {
   @include expand();
+  background-color: $color-1;
   body {
     @include expand();
+    min-width: 56rem;
+    min-height: 48rem;
     @include fcc(column);
     main {
       @include expand();
       max-width: 64rem;
+      max-height: 48rem;
       @include fcc(column);
-      background-color: gray;
+      gap: 2rem;
+      background-color: $color-2;
+      box-shadow: 0rem 0rem 8rem 8rem $color-2;
+      div#headers-container {
+        width: 50%;
+        @include fcc(column);
+        gap: 2rem;
+        h1#title {
+          transition: all .25s;
+          font-size: 2rem;
+        }
+        h2#message {
+          transition: all .25s;
+          font-size: 1.5rem;
+          color: $color-secondary;
+        }
+      }
       section {
+        transition: all .25s;
         min-width: 32rem;
         min-height: 32rem;
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(3, 1fr);
         gap: .25rem;
-        background-color: black;
+        background-color: $color-1;
         div.sqr {
           @include expand();
           @include fcc(row);
-          background-color: white;
+          background-color: $color-2;
+          color: $color-secondary;
           font-size: 4rem;
+          span {
+            color: $color-4;
+          }
         }
       }
-      section.hidden{
-        display: none;
+      div#modes-container {
+        transition: all 2s;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+        button {
+          transition: all .25s;
+          width: 30%;
+          background-color: $color-1;
+          color: $color-secondary;
+          font-size: 1.5rem;
+          padding: 1rem 0;
+          border: none;
+          border-radius: .25rem;
+        }
+        button:hover {
+          background-color: $color-secondary;
+          color: $color-1;
+          scale: 1.05;
+        }
       }
     }
   }
+}
+
+:root .hidden {
+  opacity: 0;
 }
