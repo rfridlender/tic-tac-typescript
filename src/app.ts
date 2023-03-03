@@ -70,10 +70,6 @@ function updateBoard(): void {
   }
 }
 
-function spanify(str: string): string {
-  return `<span>${str}<span/>`;
-}
-
 function updateMessage(): void {
   messageEl.classList.add('hidden');
   setTimeout(() => {
@@ -84,7 +80,7 @@ function updateMessage(): void {
         `Player ${turn === 1 ? `One` : `Two`}'s Turn!`;
     } else {
       messageEl.textContent = 
-      winner ? turn === 1 ? 'Error: Solution Not Found': 'Solution Found' :
+      winner ? turn === 1 ? 'Player Won': 'Solution Found' :
       tie ? `Solution Found` :
       turn === 1 ? 'Listening for input...' : 'Calculating output...'
     }
